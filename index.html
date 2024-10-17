@@ -73,6 +73,14 @@
     <div id="necessities">
       <button id="record">Record Video</button>
       <button id="stop" disabled>Stop Recording</button>
+      <a
+        id="download"
+        href="#"
+        download="recorded_video.webm"
+        style="display: none"
+      >
+        <button>Download Video</button>
+      </a>
     </div>
     <div>
       <p id="message"></p>
@@ -82,6 +90,7 @@
       let controlsDiv = document.getElementById("necessities");
       let record = document.getElementById("record");
       let stopBtn = document.getElementById("stop");
+      let downloadBtn = document.getElementById("download");
       let messages = document.getElementById("message");
       let mediaRecorder;
       let recordedChunks = [];
@@ -90,6 +99,7 @@
         accessCamera();
         messages.innerText = "Recording";
         record.disabled = true;
+        downloadBtn.style.display = "none"; // Hide download button initially
       });
 
       async function accessCamera() {
@@ -116,12 +126,11 @@
             const videoBlob = new Blob(recordedChunks, { type: "video/webm" });
             const videoUrl = URL.createObjectURL(videoBlob);
 
-            // Create a downloadable link for the recorded video
-            const downloadLink = document.createElement("a");
-            downloadLink.href = videoUrl;
-            downloadLink.download = "recorded_video.webm";
-            downloadLink.textContent = "Download Video";
-            controlsDiv.appendChild(downloadLink);
+            // Update the download link
+            downloadBtn.href = videoUrl;
+            downloadBtn.style.display = "block"; // Show download button
+            downloadBtn.firstChild.innerText = "Download Video"; // Reset button text
+            downloadBtn.firstChild.disabled = false; // Enable download button
 
             recordedChunks = [];
             stopBtn.disabled = true;
@@ -160,6 +169,10 @@
         removeVideo.className = "remove-btn";
         removeVideo.onclick = () => {
           videoDiv.removeChild(videoContainer);
+          if (videoDiv.childElementCount === 0) {
+            // Hide download button if no videos
+            downloadBtn.style.display = "none";
+          }
         };
         videoContainer.appendChild(removeVideo);
       }
