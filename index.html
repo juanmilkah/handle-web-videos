@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Video Recorder</title>
+    <style>
+      * {
+        text-align: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="video"></div>
+    <div id="necessities">
+      <button id="record">Record Video</button>
+      <button id="stop" disabled>Stop Recording</button>
+    </div>
+    <div>
+      <p id="message"></p>
+    </div>
+    <script>
+      let videoDiv = document.getElementById("video");
+      let controlsDiv = document.getElementById("necessities");
+      let record = document.getElementById("record");
+      let stopBtn = document.getElementById("stop");
+      let messages = document.getElementById("message");
+      let mediaRecorder;
+      let recordedChunks = [];
+
+      record.addEventListener("click", () => {
+        accessCamera();
+        messages.innerText = "Recording";
+        record.disabled = true;
+      });
+
+      async function accessCamera() {
+        try {
+          let stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
+          const thisVideoDiv = document.createElement("div");
+          const videoElement = document.createElement("video");
+          videoElement.srcObject = stream;
+          videoElement.play();
+          thisVideoDiv.appendChild(videoElement);
+          videoDiv.appendChild(thisVideoDiv);
+
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              recordedChunks.push(event.data);
+            }
+          };
+
+          mediaRecorder.onstop = () => {
+            const videoBlob = new Blob(recordedChunks, { type: "video/webm" });
+            const videoUrl = URL.createObjectURL(videoBlob);
+
+            // Create a downloadable link for the recorded video
+            const downloadLink = document.createElement("a");
+            downloadLink.href = videoUrl;
+            downloadLink.download = "recorded_video.webm";
+            downloadLink.textContent = "Download Video";
+            controlsDiv.appendChild(downloadLink);
+
+            recordedChunks = [];
+            stopBtn.disabled = true; // Disable stop button
+
+            // Stop the video stream
+            stream.getTracks().forEach((track) => track.stop());
+
+            // Play recorded video and add remove button
+            thisVideoDiv.removeChild(videoElement);
+            playRecordedVideo(videoUrl, thisVideoDiv);
+          };
+
+          mediaRecorder.start();
+          stopBtn.disabled = false; // Enable stop button
+
+          stopBtn.onclick = () => {
+            record.disabled = false;
+            mediaRecorder.stop();
+            messages.innerText = "Stopped Recording";
+          };
+        } catch (e) {
+          messages.innerText = `Error Accessing the camera: ${e}`;
+        }
+      }
+
+      function playRecordedVideo(videoUrl, videoContainer) {
+        let videoElement = document.createElement("video");
+        videoElement.src = videoUrl;
+        videoElement.controls = true;
+        videoElement.autoplay = false;
+        videoContainer.appendChild(videoElement);
+
+        // Create a remove button specific to this video
+        let removeVideo = document.createElement("button");
+        removeVideo.innerText = "Remove";
+        removeVideo.onclick = () => {
+          videoDiv.removeChild(videoContainer);
+        };
+        videoContainer.appendChild(removeVideo);
+      }
+    </script>
+  </body>
+</html>
