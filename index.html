@@ -4,9 +4,67 @@
     <meta charset="UTF-8" />
     <title>Video Recorder</title>
     <style>
-      * {
-        text-align: center;
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        color: #333;
+        display: flex;
+        flex-direction: column;
         align-items: center;
+        padding: 20px;
+      }
+
+      #video {
+        margin: 20px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      video {
+        max-width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      #necessities {
+        margin-bottom: 20px;
+      }
+
+      button {
+        padding: 10px 15px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+
+      button:hover:not(:disabled) {
+        background-color: #0056b3;
+      }
+
+      .remove-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: transparent;
+        border: none;
+        color: red;
+        font-size: 20px;
+        cursor: pointer;
+      }
+
+      .video-container {
+        position: relative;
+        margin-bottom: 20px;
       }
     </style>
   </head>
@@ -40,6 +98,7 @@
             video: true,
           });
           const thisVideoDiv = document.createElement("div");
+          thisVideoDiv.className = "video-container";
           const videoElement = document.createElement("video");
           videoElement.srcObject = stream;
           videoElement.play();
@@ -65,7 +124,7 @@
             controlsDiv.appendChild(downloadLink);
 
             recordedChunks = [];
-            stopBtn.disabled = true; // Disable stop button
+            stopBtn.disabled = true;
 
             // Stop the video stream
             stream.getTracks().forEach((track) => track.stop());
@@ -76,7 +135,7 @@
           };
 
           mediaRecorder.start();
-          stopBtn.disabled = false; // Enable stop button
+          stopBtn.disabled = false;
 
           stopBtn.onclick = () => {
             record.disabled = false;
@@ -95,9 +154,10 @@
         videoElement.autoplay = false;
         videoContainer.appendChild(videoElement);
 
-        // Create a remove button specific to this video
+        // Create an X mark for removing the video
         let removeVideo = document.createElement("button");
-        removeVideo.innerText = "Remove";
+        removeVideo.innerHTML = "&times;"; // X mark
+        removeVideo.className = "remove-btn";
         removeVideo.onclick = () => {
           videoDiv.removeChild(videoContainer);
         };
